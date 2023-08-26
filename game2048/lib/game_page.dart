@@ -13,6 +13,7 @@ class _GamePageState extends State<GamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 227, 197, 158),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
