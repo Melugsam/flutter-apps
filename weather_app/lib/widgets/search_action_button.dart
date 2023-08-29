@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:weather_app/providers/search_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weather_app/bloc/weather_bloc.dart';
 
 class SearchActionButton extends StatefulWidget {
   final BuildContext prevContext;
@@ -12,6 +12,7 @@ class SearchActionButton extends StatefulWidget {
 }
 
 class _SearchActionButtonState extends State<SearchActionButton> {
+  late String cityName = '';
   @override
   Widget build(BuildContext context) {
     return IconButton(
@@ -27,7 +28,7 @@ class _SearchActionButtonState extends State<SearchActionButton> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        final searchModel = Provider.of<SearchModel>(context);
+        final weatherBloc = BlocProvider.of<WeatherBloc>(context);
 
         return AlertDialog(
           content: TextField(
@@ -41,8 +42,7 @@ class _SearchActionButtonState extends State<SearchActionButton> {
             textCapitalization: TextCapitalization.sentences,
             onChanged: (value) {
               setState(() {
-                searchModel.searchResult = value;
-                print(searchModel.searchResult);
+                cityName = value;
               });
             },
           ),
@@ -74,7 +74,10 @@ class _SearchActionButtonState extends State<SearchActionButton> {
                       ),
                     ),
                     child: Text("Поиск"),
-                    onPressed: () {},
+                    onPressed: () async {
+                      weatherBloc.add(FetchWeatherEvent(cityName));
+                      Navigator.of(context).pop();
+                    },
                   ),
                 ),
               ],
