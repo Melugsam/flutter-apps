@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_app/bloc/weather_bloc.dart';
@@ -14,9 +16,9 @@ class DataService extends StatelessWidget {
           return Column(
             children: [
               Text(state.weatherData.name.toString(),style: GoogleFonts.lato(fontSize: 40, fontWeight: FontWeight.w600)),
-              Text(state.weatherData.weatherDescription, style: GoogleFonts.lato(fontSize: 26, fontWeight: FontWeight.w300)),
-              Image.network(state.weatherData.iconUrl),
               Text("${state.weatherData.fixTemp(state.weatherData.currTemp)}°C", style: GoogleFonts.lato(fontSize: 30, fontWeight: FontWeight.w400)),
+              Image.memory(Uint8List.fromList(state.weatherData.iconBytes)),
+              Text(state.weatherData.weatherDescription, style: GoogleFonts.lato(fontSize: 26, fontWeight: FontWeight.w300)),
             ],
           );
         } else if (state is WeatherLoadingState) {

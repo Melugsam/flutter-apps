@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 class WeatherData {
   final String name;
   final String weatherDescription;
   final String icon;
+  final Uint8List iconBytes;
   final double currTemp;
   final double minTemp;
   final double maxTemp;
@@ -11,6 +14,7 @@ class WeatherData {
     required this.name,
     required this.weatherDescription,
     required this.icon,
+    required this.iconBytes,
     required this.currTemp,
     required this.minTemp,
     required this.maxTemp,
@@ -18,7 +22,7 @@ class WeatherData {
   });
 
   String get iconUrl{
-    return "https://openweathermap.org/img/wn/${icon}@2x.png";
+    return "https://openweathermap.org/img/wn/$icon@2x.png";
   }
 
   String fixTemp(double currTemp){

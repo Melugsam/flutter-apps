@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -64,17 +65,27 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
       final maxTemp = data['main']['temp_max'];
       final humidity = data['main']['humidity'];
 
+      final iconUrl = "https://openweathermap.org/img/wn/$icon@2x.png";
+      final iconResponse = await http.get(Uri.parse(iconUrl));
       print("GET WEATHER DATA TEST");
 
-      return WeatherData(
-        name: name,
-        weatherDescription: weatherDescription,
-        icon: icon,
-        currTemp: currTemp,
-        minTemp: minTemp,
-        maxTemp: maxTemp,
-        humidity: humidity,
-      );
+      if (iconResponse.statusCode == 200) {
+        final iconBytes = iconResponse.bodyBytes;
+
+        return WeatherData(
+          name: name,
+          weatherDescription: weatherDescription,
+          icon: icon,
+          iconBytes: iconBytes,
+          currTemp: currTemp,
+          minTemp: minTemp,
+          maxTemp: maxTemp,
+          humidity: humidity,
+        );
+      } 
+      else {
+        throw Exception('Failed to fetch icon data.');
+      }
     } else {
       throw Exception(
           'Failed to fetch weather data. Status Code: ${response.statusCode}');
