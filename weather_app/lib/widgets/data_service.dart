@@ -14,6 +14,8 @@ class DataService extends StatelessWidget {
       builder: (context, state) {
         if (state is WeatherLoadedState) {
           return Column(
+             crossAxisAlignment: CrossAxisAlignment.center,
+             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(state.weatherData.name.toString(),style: GoogleFonts.lato(fontSize: 40, fontWeight: FontWeight.w600)),
               Text("${state.weatherData.fixTemp(state.weatherData.currTemp)}°C", style: GoogleFonts.lato(fontSize: 30, fontWeight: FontWeight.w400)),
