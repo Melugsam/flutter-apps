@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/weather_bloc.dart';
+import 'bloc/theme_bloc.dart';
 import 'package:weather_app/widgets/data_service.dart';
 import 'widgets/search_action_button.dart';
+import 'widgets/settings_action_button.dart';
 
 void main() {
   runApp(
-    BlocProvider(
-      create: (context) => WeatherBloc(),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => WeatherBloc()),
+        BlocProvider(create: (context) => ThemeBloc())
+      ],
       child: WeatherApp(),
     ),
   );
@@ -44,17 +49,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         actions: [
+          SettingsActionButton(prevContext:context),
           SearchActionButton(prevContext:context)
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: widthPadding, vertical: 16.0),
+        padding: EdgeInsets.symmetric(horizontal: widthPadding),
         child: Center(
-          child: Column(
-            children: [
-              DataService(screenWidth)
-            ],
-          ),
+            child:  DataService(screenWidth)
         ),
       ),
     );
