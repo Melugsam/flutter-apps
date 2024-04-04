@@ -24,7 +24,7 @@ class NotesHub extends StatelessWidget {
                     alignment: Alignment.topCenter,
                     child: IconButton(
                         onPressed: () {},
-                        icon: const Icon(Icons.settings_outlined, size: 36)),
+                        icon: const Icon(Icons.settings_outlined, size: 32)),
                   ),
                 ],
               ),
@@ -36,12 +36,13 @@ class NotesHub extends StatelessWidget {
           ),
         ),
         floatingActionButton: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: const EdgeInsets.all(16.0),
           child: FloatingActionButton(
+            backgroundColor: Colors.grey,
             onPressed: () {
               context.go("/create-note");
             },
-            child: const Icon(Icons.add),
+            child: const Icon(Icons.add, size: 24,),
           ),
         ),
       ),
