@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:notekeeper_new/domain/models/note.dart';
+import 'package:notekeeper_new/domain/models/notes_db.dart';
 
-class NotesHub extends StatelessWidget {
+class NotesHub extends StatefulWidget {
   const NotesHub({super.key});
+
+  @override
+  State<NotesHub> createState() => _NotesHubState();
+}
+
+class _NotesHubState extends State<NotesHub> {
+  final notesDB = NotesDB();
+  Future<List<Note>>? futureNotes;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchNotes();
+  }
+
+  void fetchNotes() {
+    setState(() {
+      futureNotes = notesDB.fetchAll();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +54,12 @@ class NotesHub extends StatelessWidget {
                 height: 32,
                 thickness: 3,
               ),
+              ElevatedButton(
+                onPressed: () {
+                  print(futureNotes);
+                },
+                child: Text("test"),
+              )
             ],
           ),
         ),
@@ -40,9 +68,12 @@ class NotesHub extends StatelessWidget {
           child: FloatingActionButton(
             backgroundColor: Colors.grey,
             onPressed: () {
-              context.go("/create-note");
+              context.go("create-note",extra:NotesDB );
             },
-            child: const Icon(Icons.add, size: 24,),
+            child: const Icon(
+              Icons.add,
+              size: 24,
+            ),
           ),
         ),
       ),
