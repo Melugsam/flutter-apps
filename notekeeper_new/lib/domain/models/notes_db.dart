@@ -12,7 +12,7 @@ class NotesDB {
     "title" TEXT,
     "content" TEXT,
     "createdTime" TEXT,
-    "textColor" TEXT,
+    "color" INTEGER,
     "isPinned" INTEGER,
     PRIMARY KEY("id" AUTOINCREMENT)
     );""");
@@ -21,17 +21,18 @@ class NotesDB {
   Future<int> create(
       {required String title,
       required String content,
-      required String createdTime}) async {
+      required String createdTime,
+      required int color}) async {
     final database = await DatabaseService().database;
     return await database.rawInsert("""
-    INSERT INTO TABLE $tableName (title,content,createdTime) VALUES (?,?,?""",
-        [title, content, createdTime]);
+    INSERT INTO $tableName (title,content,createdTime,color) VALUES (?,?,?,?)""",
+        [title, content, createdTime, color]);
   }
 
   Future<List<Note>> fetchAll() async {
     final database = await DatabaseService().database;
     final notes = await database.rawQuery("""
-    SELECT * FROM $database""");
+    SELECT * FROM $tableName""");
     return notes.map((note) => Note.fromSqfliteDatabase(note)).toList();
   }
 
@@ -60,5 +61,13 @@ class NotesDB {
   Future<void> delete(int id) async{
     final database = await DatabaseService().database;
     await database.rawDelete("""DELETE FROM $tableName WHERE ID = ?""", [id]);
+  }
+
+  Future<void> deleteAll() async{
+    final database = await DatabaseService().database;
+    final notes = await database.query(tableName);
+    for (var note in notes) {
+      await database.rawDelete("""DELETE FROM $tableName WHERE ID = ?""", [note['id']]);
+    }
   }
 }

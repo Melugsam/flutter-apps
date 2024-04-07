@@ -19,7 +19,6 @@ final GoRouter _router = GoRouter(
         builder: (context, state) => const NotesHub(),
       ),
       GoRoute(
-          name: "create-note",
           path: '/create-note',
           builder: (context, state) {
             NotesDB notesDB = state.extra as NotesDB;

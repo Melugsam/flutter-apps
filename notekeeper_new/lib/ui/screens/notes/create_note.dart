@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:notekeeper_new/data/note_colors.dart';
 import 'package:notekeeper_new/domain/models/notes_db.dart';
@@ -38,7 +39,9 @@ class _CreateNoteState extends State<CreateNote> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      context.go("/notes-hub");
+                    },
                     icon: const Icon(Icons.arrow_back, size: 32),
                   ),
                   const Expanded(child: SizedBox()),
@@ -46,14 +49,17 @@ class _CreateNoteState extends State<CreateNote> {
                     onPressed: () {},
                     icon: const Icon(Icons.delete, size: 32),
                   ),
-                  const SizedBox(width: 12,),
+                  const SizedBox(
+                    width: 12,
+                  ),
                   IconButton(
                     onPressed: () async {
-                      await widget.notesDB.create(title: titleController.text,
+                      await widget.notesDB.create(
+                          title: titleController.text,
                           content: contentController.text,
-                          createdTime: time);
+                          createdTime: time,
+                          color: containerColor.value);
                       if (!mounted) return;
-
                     },
                     icon: const Icon(Icons.check, size: 32),
                   ),
@@ -67,8 +73,8 @@ class _CreateNoteState extends State<CreateNote> {
                   color: containerColor,
                 ),
                 margin: const EdgeInsets.all(32),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 26),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 26),
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
@@ -103,9 +109,9 @@ class _CreateNoteState extends State<CreateNote> {
                         decoration: const InputDecoration(
                           hintText: "Заголовок",
                           enabledBorder:
-                          UnderlineInputBorder(borderSide: BorderSide.none),
+                              UnderlineInputBorder(borderSide: BorderSide.none),
                           focusedBorder:
-                          UnderlineInputBorder(borderSide: BorderSide.none),
+                              UnderlineInputBorder(borderSide: BorderSide.none),
                         ),
                         style: const TextStyle(
                             fontSize: 32, fontWeight: FontWeight.w600),
@@ -117,9 +123,9 @@ class _CreateNoteState extends State<CreateNote> {
                         decoration: const InputDecoration(
                           hintText: "Текст",
                           enabledBorder:
-                          UnderlineInputBorder(borderSide: BorderSide.none),
+                              UnderlineInputBorder(borderSide: BorderSide.none),
                           focusedBorder:
-                          UnderlineInputBorder(borderSide: BorderSide.none),
+                              UnderlineInputBorder(borderSide: BorderSide.none),
                         ),
                         style: const TextStyle(
                             fontSize: 21, fontWeight: FontWeight.w400),
@@ -135,7 +141,6 @@ class _CreateNoteState extends State<CreateNote> {
     );
   }
 
-  static String currentTime() =>
-      DateFormat('dd.MM.yyyy HH:mm')
-          .format(DateTime.now().add(const Duration(hours: 3)));
+  static String currentTime() => DateFormat('dd.MM.yyyy HH:mm')
+      .format(DateTime.now().add(const Duration(hours: 3)));
 }

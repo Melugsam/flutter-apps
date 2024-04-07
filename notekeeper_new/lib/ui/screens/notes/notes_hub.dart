@@ -1,7 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:notekeeper_new/domain/models/note.dart';
 import 'package:notekeeper_new/domain/models/notes_db.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:notekeeper_new/ui/screens/notes/note_tile.dart';
 
 class NotesHub extends StatefulWidget {
   const NotesHub({super.key});
@@ -13,6 +16,7 @@ class NotesHub extends StatefulWidget {
 class _NotesHubState extends State<NotesHub> {
   final notesDB = NotesDB();
   Future<List<Note>>? futureNotes;
+  Map<int, bool> selectedNote = {};
 
   @override
   void initState() {
@@ -54,11 +58,80 @@ class _NotesHubState extends State<NotesHub> {
                 height: 32,
                 thickness: 3,
               ),
-              ElevatedButton(
-                onPressed: () {
-                  print(futureNotes);
-                },
-                child: Text("test"),
+              Expanded(
+                child: FutureBuilder(
+                  future: futureNotes,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Text(snapshot.error.toString());
+                    } else {
+                      final notes = snapshot.data!;
+                      return notes.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No Notes =(",
+                                style: TextStyle(fontSize: 26),
+                              ),
+                            )
+                          : MasonryGridView.count(
+                              padding: EdgeInsets.zero,
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 10,
+                              crossAxisSpacing: 10,
+                              itemCount: notes.length,
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onLongPress: () {
+                                    setState(() {
+                                      if (selectedNote.containsKey(index)) {
+                                        selectedNote.remove(index);
+                                      } else {
+                                        selectedNote[index] = true;
+                                      }
+                                    });
+                                  },
+                                  child: Stack(
+                                    children: [
+                                      NoteTile(
+                                        title: notes[index].title,
+                                        content: notes[index].content,
+                                        color: notes[index].color,
+                                        createdTime: notes[index].createdTime,
+                                      ),
+                                      AnimatedOpacity(
+                                        opacity: selectedNote.containsKey(index)
+                                            ? 1.0
+                                            : 0.0,
+                                        duration:
+                                            const Duration(milliseconds: 150),
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Align(
+                                            alignment: Alignment.bottomRight,
+                                            child: CircleAvatar(
+                                              backgroundColor: Color.fromRGBO(
+                                                  110, 170, 250, 1.0),
+                                              radius: 16,
+                                              child: Icon(
+                                                Icons.check,
+                                                color: Colors.white,
+                                                size: 22,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                    }
+                  },
+                ),
               )
             ],
           ),
@@ -68,13 +141,20 @@ class _NotesHubState extends State<NotesHub> {
           child: FloatingActionButton(
             backgroundColor: Colors.grey,
             onPressed: () {
-              context.go("create-note",extra:NotesDB );
+              context.go("/create-note", extra: notesDB);
             },
             child: const Icon(
               Icons.add,
+              color: Color.fromRGBO(49, 49, 49, 1.0),
               size: 24,
             ),
           ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.delete), label: "Delete"),
+            BottomNavigationBarItem(icon: Icon(Icons.share), label: "Share")
+          ],
         ),
       ),
     );
