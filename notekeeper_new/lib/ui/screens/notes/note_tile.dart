@@ -25,6 +25,7 @@ class NoteTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Column(
         children: [
+          const SizedBox(height: 4,),
           Text(
             title,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),

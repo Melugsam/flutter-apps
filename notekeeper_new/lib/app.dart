@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:notekeeper_new/ui/screens/notes/notes_hub.dart';
 import 'domain/models/notes_db.dart';
-import 'ui/screens/notes/create_note.dart';
+import 'ui/screens/notes/note_model.dart';
 import 'ui/screens/welcome/welcome_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -22,7 +22,7 @@ final GoRouter _router = GoRouter(
           path: '/create-note',
           builder: (context, state) {
             NotesDB notesDB = state.extra as NotesDB;
-            return CreateNote(
+            return NoteForm(
                 notesDB:notesDB
             );
           }

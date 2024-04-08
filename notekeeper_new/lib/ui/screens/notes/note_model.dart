@@ -1,21 +1,17 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:notekeeper_new/data/note_colors.dart';
 import 'package:notekeeper_new/domain/models/notes_db.dart';
 
-class CreateNote extends StatefulWidget {
+class NoteForm extends StatefulWidget {
   final NotesDB notesDB;
-
-  const CreateNote({super.key, required this.notesDB});
-
+  const NoteForm({super.key, required this.notesDB});
   @override
-  State<CreateNote> createState() => _CreateNoteState();
+  State<NoteForm> createState() => _NoteFormState();
 }
 
-class _CreateNoteState extends State<CreateNote> {
+class _NoteFormState extends State<NoteForm> {
   String time = currentTime();
   TextEditingController titleController = TextEditingController();
   TextEditingController contentController = TextEditingController();
@@ -59,7 +55,12 @@ class _CreateNoteState extends State<CreateNote> {
                           content: contentController.text,
                           createdTime: time,
                           color: containerColor.value);
-                      if (!mounted) return;
+                      if (mounted){
+                        context.go("/notes-hub");
+                      }
+                      if (!mounted) {
+                        return;
+                      }
                     },
                     icon: const Icon(Icons.check, size: 32),
                   ),
