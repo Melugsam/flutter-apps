@@ -45,7 +45,7 @@ class NotesDB {
   }
 
   Future<int> update(
-      {required int id, String? title, String? content, String? createdTime}) async {
+      {required int id, String? title, String? content, String? createdTime, int? color}) async {
     final database = await DatabaseService().database;
     return await database.update(
         tableName,
@@ -53,6 +53,7 @@ class NotesDB {
           if (title != null) 'title': title,
           if (content != null) 'content': content,
           if (createdTime != null) 'createdTime': createdTime,
+          if (color != null) 'color': color,
         },
         where: 'id = ?',
         conflictAlgorithm: ConflictAlgorithm.rollback,

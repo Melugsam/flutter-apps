@@ -94,7 +94,7 @@ class _NotesHubState extends State<NotesHub> {
                                       });
                                     },
                                     onTap: () {
-
+                                      context.go("/create-note", extra: {"notesDB":notesDB, "note":notes[index]}, );
                                     },
                                     child: Stack(
                                       children: [
@@ -145,7 +145,7 @@ class _NotesHubState extends State<NotesHub> {
             child: FloatingActionButton(
               backgroundColor: const Color.fromRGBO(44, 44, 44, 1.0),
               onPressed: () {
-                context.go("/create-note", extra: notesDB);
+                context.go("/create-note", extra: {"notesDB":notesDB});
               },
               child: const Icon(
                 Icons.note_alt_outlined,
@@ -164,6 +164,7 @@ class _NotesHubState extends State<NotesHub> {
                             for (var note in selectedNote.values) {
                               await notesDB.delete(note.id);
                             }
+                            selectedNote.clear();
                             fetchNotes();
                           },
                         ),

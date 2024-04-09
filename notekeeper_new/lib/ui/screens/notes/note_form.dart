@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:notekeeper_new/data/note_colors.dart';
+import 'package:notekeeper_new/domain/models/note.dart';
 import 'package:notekeeper_new/domain/models/notes_db.dart';
 
 class NoteForm extends StatefulWidget {
+  final Note? note;
   final NotesDB notesDB;
-  const NoteForm({super.key, required this.notesDB});
+
+  const NoteForm({super.key, required this.notesDB, this.note});
+
   @override
   State<NoteForm> createState() => _NoteFormState();
 }
@@ -20,7 +24,13 @@ class _NoteFormState extends State<NoteForm> {
   @override
   void initState() {
     super.initState();
-    containerColor = getRandomColor();
+    if (widget.note != null) {
+      titleController.text = widget.note!.title;
+      contentController.text = widget.note!.content;
+      containerColor = Color(widget.note!.color);
+    } else {
+      containerColor = getRandomColor();
+    }
   }
 
   @override
@@ -50,16 +60,31 @@ class _NoteFormState extends State<NoteForm> {
                   ),
                   IconButton(
                     onPressed: () async {
-                      await widget.notesDB.create(
-                          title: titleController.text,
-                          content: contentController.text,
-                          createdTime: time,
-                          color: containerColor.value);
-                      if (mounted){
-                        context.go("/notes-hub");
-                      }
-                      if (!mounted) {
-                        return;
+                      if (widget.note != null) {
+                        await widget.notesDB.update(
+                            id: widget.note!.id,
+                            title: titleController.text,
+                            content: contentController.text,
+                            createdTime: time,
+                            color: containerColor.value);
+                        if (mounted) {
+                          context.go("/notes-hub");
+                        }
+                        if (!mounted) {
+                          return;
+                        }
+                      } else {
+                        await widget.notesDB.create(
+                            title: titleController.text,
+                            content: contentController.text,
+                            createdTime: time,
+                            color: containerColor.value);
+                        if (mounted) {
+                          context.go("/notes-hub");
+                        }
+                        if (!mounted) {
+                          return;
+                        }
                       }
                     },
                     icon: const Icon(Icons.check, size: 32),
