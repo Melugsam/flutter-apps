@@ -4,7 +4,7 @@ class Note {
   final String content;
   final String createdTime;
   final int color;
-  final bool isPinned;
+  final int isPinned;
 
   Note(
       {required this.id,
@@ -20,6 +20,6 @@ class Note {
     content: map['content'] ?? '',
     createdTime: map['createdTime'] ?? '',
     color: map['color'] ?? 4294958788,
-    isPinned: map['isPinned'] ?? false,
+    isPinned: map['isPinned'] ?? 0,
   );
 }

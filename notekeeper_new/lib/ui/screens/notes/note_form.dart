@@ -20,6 +20,7 @@ class _NoteFormState extends State<NoteForm> {
   TextEditingController titleController = TextEditingController();
   TextEditingController contentController = TextEditingController();
   Color containerColor = const Color.fromRGBO(233, 244, 251, 1);
+  int isPinned = 0;
 
   @override
   void initState() {
@@ -28,6 +29,7 @@ class _NoteFormState extends State<NoteForm> {
       titleController.text = widget.note!.title;
       contentController.text = widget.note!.content;
       containerColor = Color(widget.note!.color);
+      isPinned = widget.note!.isPinned;
     } else {
       containerColor = getRandomColor();
     }
@@ -36,6 +38,7 @@ class _NoteFormState extends State<NoteForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [
@@ -52,7 +55,18 @@ class _NoteFormState extends State<NoteForm> {
                   ),
                   const Expanded(child: SizedBox()),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      if (widget.note != null) {
+                        await widget.notesDB.delete(widget.note!.id);
+                        if (mounted) {
+                          context.go("/notes-hub");
+                        }
+                      } else {
+                        if (mounted) {
+                          context.go("/notes-hub");
+                        }
+                      }
+                    },
                     icon: const Icon(Icons.delete, size: 32),
                   ),
                   const SizedBox(
@@ -66,24 +80,21 @@ class _NoteFormState extends State<NoteForm> {
                             title: titleController.text,
                             content: contentController.text,
                             createdTime: time,
-                            color: containerColor.value);
+                            color: containerColor.value,
+                            isPinned: isPinned);
                         if (mounted) {
                           context.go("/notes-hub");
-                        }
-                        if (!mounted) {
-                          return;
                         }
                       } else {
                         await widget.notesDB.create(
-                            title: titleController.text,
-                            content: contentController.text,
-                            createdTime: time,
-                            color: containerColor.value);
+                          title: titleController.text,
+                          content: contentController.text,
+                          createdTime: time,
+                          color: containerColor.value,
+                          isPinned: isPinned,
+                        );
                         if (mounted) {
                           context.go("/notes-hub");
-                        }
-                        if (!mounted) {
-                          return;
                         }
                       }
                     },
@@ -121,8 +132,14 @@ class _NoteFormState extends State<NoteForm> {
                             icon: const Icon(Icons.notifications_none),
                           ),
                           IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.push_pin),
+                            onPressed: () {
+                              setState(() {
+                                isPinned = 1 - isPinned;
+                              });
+                            },
+                            icon: Icon(isPinned == 1
+                                ? Icons.push_pin
+                                : Icons.push_pin_outlined),
                           ),
                           IconButton(
                             onPressed: () {},

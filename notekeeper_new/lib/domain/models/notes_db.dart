@@ -22,11 +22,12 @@ class NotesDB {
       {required String title,
       required String content,
       required String createdTime,
-      required int color}) async {
+      required int color,
+      required int isPinned}) async {
     final database = await DatabaseService().database;
     return await database.rawInsert("""
-    INSERT INTO $tableName (title,content,createdTime,color) VALUES (?,?,?,?)""",
-        [title, content, createdTime, color]);
+    INSERT INTO $tableName (title,content,createdTime,color, isPinned) VALUES (?,?,?,?,?)""",
+        [title, content, createdTime, color, isPinned]);
   }
 
   Future<List<Note>> fetchAll() async {
@@ -45,7 +46,7 @@ class NotesDB {
   }
 
   Future<int> update(
-      {required int id, String? title, String? content, String? createdTime, int? color}) async {
+      {required int id, String? title, String? content, String? createdTime, int? color, int? isPinned}) async {
     final database = await DatabaseService().database;
     return await database.update(
         tableName,
@@ -54,6 +55,7 @@ class NotesDB {
           if (content != null) 'content': content,
           if (createdTime != null) 'createdTime': createdTime,
           if (color != null) 'color': color,
+          if (isPinned != null) 'isPinned': isPinned,
         },
         where: 'id = ?',
         conflictAlgorithm: ConflictAlgorithm.rollback,

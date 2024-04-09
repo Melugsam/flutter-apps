@@ -168,7 +168,7 @@ class _NotesHubState extends State<NotesHub> {
                             fetchNotes();
                           },
                         ),
-                        label: "Delete"),
+                        label: "Delete", ),
                     const BottomNavigationBarItem(
                         icon: Icon(Icons.share), label: "Share"),
                   ],
