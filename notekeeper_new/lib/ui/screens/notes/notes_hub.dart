@@ -1,5 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:notekeeper_new/bloc/screens/notes/notes_hub_bloc.dart';
 import 'package:notekeeper_new/domain/models/note.dart';
 import 'package:notekeeper_new/domain/models/notes_db.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -15,18 +19,13 @@ class NotesHub extends StatefulWidget {
 class _NotesHubState extends State<NotesHub> {
   final notesDB = NotesDB();
   Future<List<Note>>? futureNotes;
-  Map<int, Note> selectedNote = {};
+  List<Note> selectedNote = [];
 
   @override
   void initState() {
     super.initState();
-    fetchNotes();
-  }
-
-  void fetchNotes() {
-    setState(() {
-      futureNotes = notesDB.fetchAll();
-    });
+    BlocProvider.of<NotesHubBloc>(context)
+        .add(FetchNotesEvent(notesDB: notesDB));
   }
 
   @override
@@ -41,11 +40,26 @@ class _NotesHubState extends State<NotesHub> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "Manage Your\nDaily Tasks",
-                      style:
-                          TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
+                    const Expanded(
+                      child: Text(
+                        "Manage Your\nDaily Tasks",
+                        style:
+                            TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
+                      ),
                     ),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: IconButton(
+                          onPressed: () async {
+                            await notesDB.deleteAll();
+                            setState(() {
+                                BlocProvider.of<NotesHubBloc>(context)
+                                  .add(FetchNotesEvent(notesDB: notesDB));
+                              });
+                          },
+                          icon: const Icon(Icons.delete_forever, size: 30)),
+                    ),
+                    const SizedBox(width: 8,),
                     Align(
                       alignment: Alignment.topCenter,
                       child: IconButton(
@@ -59,80 +73,222 @@ class _NotesHubState extends State<NotesHub> {
                   thickness: 3,
                 ),
                 Expanded(
-                  child: FutureBuilder(
-                    future: futureNotes,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Text(snapshot.error.toString());
-                      } else {
-                        final notes = snapshot.data!;
-                        return notes.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  "No Notes",
-                                  style: TextStyle(fontSize: 26),
-                                ),
-                              )
-                            : MasonryGridView.count(
-                                padding: EdgeInsets.zero,
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 10,
-                                crossAxisSpacing: 10,
-                                itemCount: notes.length,
-                                itemBuilder: (context, index) {
-                                  return GestureDetector(
-                                    onLongPress: () {
-                                      setState(() {
-                                        if (selectedNote.containsKey(index)) {
-                                          selectedNote.remove(index);
-                                        } else {
-                                          selectedNote[index] = notes[index];
-                                        }
-                                      });
-                                    },
-                                    onTap: () {
-                                      context.go("/create-note", extra: {"notesDB":notesDB, "note":notes[index]}, );
-                                    },
-                                    child: Stack(
-                                      children: [
-                                        NoteTile(
-                                          title: notes[index].title,
-                                          content: notes[index].content,
-                                          color: notes[index].color,
-                                          createdTime: notes[index].createdTime,
-                                        ),
-                                        AnimatedOpacity(
-                                          opacity:
-                                              selectedNote.containsKey(index)
-                                                  ? 1.0
-                                                  : 0.0,
-                                          duration:
-                                              const Duration(milliseconds: 150),
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(8.0),
-                                            child: Align(
-                                              alignment: Alignment.bottomRight,
-                                              child: CircleAvatar(
-                                                backgroundColor: Color.fromRGBO(
-                                                    110, 170, 250, 1.0),
-                                                radius: 12,
-                                                child: Icon(
-                                                  Icons.check,
-                                                  color: Colors.white,
-                                                  size: 18,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      ],
+                  child: BlocBuilder<NotesHubBloc, NotesHubState>(
+                    builder: (BuildContext context, NotesHubState state) {
+                      if (state is NotesLoadingState) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (state is NotesFetchedState) {
+                        final pinnedNotes = state.pinnedNotes;
+                        final unpinnedNotes = state.unpinnedNotes;
+                        if (pinnedNotes.isEmpty && unpinnedNotes.isEmpty) {
+                          return const Center(
+                              child: Text(
+                            "No Notes",
+                            style: TextStyle(fontSize: 26),
+                          ));
+                        } else {
+                          return ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.zero,
+                            shrinkWrap: true,
+                            children: [
+                              if (pinnedNotes.isNotEmpty)
+                                Column(
+                                  children: [
+                                    const Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        "pinned",
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            color: Color.fromRGBO(
+                                                189, 193, 202, 1),
+                                            fontWeight: FontWeight.w900),
+                                      ),
                                     ),
-                                  );
-                                },
-                              );
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    MasonryGridView.count(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      padding: EdgeInsets.zero,
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 10,
+                                      crossAxisSpacing: 10,
+                                      itemCount: pinnedNotes.length,
+                                      itemBuilder: (context, index) {
+                                        return GestureDetector(
+                                          onLongPress: () {
+                                            setState(() {
+                                              if (selectedNote.contains(
+                                                  pinnedNotes[index])) {
+                                                selectedNote
+                                                    .remove(pinnedNotes[index]);
+                                              } else {
+                                                selectedNote
+                                                    .add(pinnedNotes[index]);
+                                              }
+                                            });
+                                          },
+                                          onTap: () {
+                                            context.go(
+                                              "/create-note",
+                                              extra: {
+                                                "notesDB": notesDB,
+                                                "note": pinnedNotes[index]
+                                              },
+                                            );
+                                          },
+                                          child: Stack(
+                                            children: [
+                                              NoteTile(
+                                                title: pinnedNotes[index].title,
+                                                content:
+                                                    pinnedNotes[index].content,
+                                                color: pinnedNotes[index].color,
+                                                createdTime: pinnedNotes[index]
+                                                    .createdTime,
+                                              ),
+                                              AnimatedOpacity(
+                                                opacity: selectedNote.contains(
+                                                        pinnedNotes[index])
+                                                    ? 1.0
+                                                    : 0.0,
+                                                duration: const Duration(
+                                                    milliseconds: 150),
+                                                child: const Padding(
+                                                  padding: EdgeInsets.all(8.0),
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.bottomRight,
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Color.fromRGBO(110,
+                                                              170, 250, 1.0),
+                                                      radius: 12,
+                                                      child: Icon(
+                                                        Icons.check,
+                                                        color: Colors.white,
+                                                        size: 18,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              if (unpinnedNotes.isNotEmpty)
+                                Column(
+                                  children: [
+                                    const Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        "unpinned",
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            color: Color.fromRGBO(
+                                                189, 193, 202, 1),
+                                            fontWeight: FontWeight.w900),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    MasonryGridView.count(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      padding: EdgeInsets.zero,
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 10,
+                                      crossAxisSpacing: 10,
+                                      itemCount: unpinnedNotes.length,
+                                      itemBuilder: (context, index) {
+                                        return GestureDetector(
+                                          onLongPress: () {
+                                            setState(() {
+                                              if (selectedNote.contains(
+                                                  unpinnedNotes[index])) {
+                                                selectedNote.remove(
+                                                    unpinnedNotes[index]);
+                                              } else {
+                                                selectedNote
+                                                    .add(unpinnedNotes[index]);
+                                              }
+                                            });
+                                          },
+                                          onTap: () {
+                                            context.go(
+                                              "/create-note",
+                                              extra: {
+                                                "notesDB": notesDB,
+                                                "note": unpinnedNotes[index]
+                                              },
+                                            );
+                                          },
+                                          child: Stack(
+                                            children: [
+                                              NoteTile(
+                                                title:
+                                                    unpinnedNotes[index].title,
+                                                content: unpinnedNotes[index]
+                                                    .content,
+                                                color:
+                                                    unpinnedNotes[index].color,
+                                                createdTime:
+                                                    unpinnedNotes[index]
+                                                        .createdTime,
+                                              ),
+                                              AnimatedOpacity(
+                                                opacity: selectedNote.contains(
+                                                        unpinnedNotes[index])
+                                                    ? 1.0
+                                                    : 0.0,
+                                                duration: const Duration(
+                                                    milliseconds: 150),
+                                                child: const Padding(
+                                                  padding: EdgeInsets.all(8.0),
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.bottomRight,
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Color.fromRGBO(110,
+                                                              170, 250, 1.0),
+                                                      radius: 12,
+                                                      child: Icon(
+                                                        Icons.check,
+                                                        color: Colors.white,
+                                                        size: 18,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                )
+                            ],
+                          );
+                        }
+                      } else {
+                        return const Center(child: Text("Error"));
                       }
                     },
                   ),
@@ -145,7 +301,7 @@ class _NotesHubState extends State<NotesHub> {
             child: FloatingActionButton(
               backgroundColor: const Color.fromRGBO(44, 44, 44, 1.0),
               onPressed: () {
-                context.go("/create-note", extra: {"notesDB":notesDB});
+                context.go("/create-note", extra: {"notesDB": notesDB});
               },
               child: const Icon(
                 Icons.note_alt_outlined,
@@ -158,17 +314,23 @@ class _NotesHubState extends State<NotesHub> {
               ? BottomNavigationBar(
                   items: [
                     BottomNavigationBarItem(
-                        icon: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () async {
-                            for (var note in selectedNote.values) {
-                              await notesDB.delete(note.id);
-                            }
+                      icon: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          for (var note in selectedNote) {
+                            await notesDB.delete(note.id);
+                          }
+                          setState(() {
                             selectedNote.clear();
-                            fetchNotes();
-                          },
-                        ),
-                        label: "Delete", ),
+                          });
+                          if (mounted) {
+                            BlocProvider.of<NotesHubBloc>(context)
+                                .add(FetchNotesEvent(notesDB: notesDB));
+                          }
+                        },
+                      ),
+                      label: "Delete",
+                    ),
                     const BottomNavigationBarItem(
                         icon: Icon(Icons.share), label: "Share"),
                   ],
