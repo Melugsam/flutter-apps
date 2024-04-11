@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:notekeeper_new/bloc/screens/notes/notes_hub_bloc.dart';
@@ -37,14 +37,14 @@ class _NotesHubState extends State<NotesHub> {
             child: Column(
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Expanded(
                       child: Text(
-                        "Manage Your\nDaily Tasks",
-                        style:
-                            TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
+                        "Управляйте\nзаметками",
+                        style: TextStyle(
+                            fontSize: 30, fontWeight: FontWeight.w600),
                       ),
                     ),
                     Align(
@@ -53,18 +53,11 @@ class _NotesHubState extends State<NotesHub> {
                           onPressed: () async {
                             await notesDB.deleteAll();
                             setState(() {
-                                BlocProvider.of<NotesHubBloc>(context)
+                              BlocProvider.of<NotesHubBloc>(context)
                                   .add(FetchNotesEvent(notesDB: notesDB));
-                              });
+                            });
                           },
-                          icon: const Icon(Icons.delete_forever, size: 30)),
-                    ),
-                    const SizedBox(width: 8,),
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.settings_outlined, size: 32)),
+                          icon: const Icon(Icons.delete_forever, size: 34)),
                     ),
                   ],
                 ),
@@ -85,7 +78,8 @@ class _NotesHubState extends State<NotesHub> {
                         if (pinnedNotes.isEmpty && unpinnedNotes.isEmpty) {
                           return const Center(
                               child: Text(
-                            "No Notes",
+                            "Заметки\nотсутствуют",
+                            textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 26),
                           ));
                         } else {
@@ -100,7 +94,7 @@ class _NotesHubState extends State<NotesHub> {
                                     const Align(
                                       alignment: Alignment.centerLeft,
                                       child: Text(
-                                        "pinned",
+                                        "закреплены",
                                         style: TextStyle(
                                             fontSize: 16,
                                             color: Color.fromRGBO(
@@ -195,7 +189,7 @@ class _NotesHubState extends State<NotesHub> {
                                     const Align(
                                       alignment: Alignment.centerLeft,
                                       child: Text(
-                                        "unpinned",
+                                        "откреплены",
                                         style: TextStyle(
                                             fontSize: 16,
                                             color: Color.fromRGBO(
@@ -312,11 +306,14 @@ class _NotesHubState extends State<NotesHub> {
           ),
           bottomNavigationBar: selectedNote.isNotEmpty
               ? BottomNavigationBar(
+                  unselectedItemColor: Colors.blueAccent,
+                  selectedItemColor: Colors.blueAccent,
                   items: [
                     BottomNavigationBarItem(
-                      icon: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () async {
+                      label: "Удалить",
+                      icon: InkWell(
+                        child: const Icon(Icons.delete),
+                        onTap: () async {
                           for (var note in selectedNote) {
                             await notesDB.delete(note.id);
                           }
@@ -329,10 +326,19 @@ class _NotesHubState extends State<NotesHub> {
                           }
                         },
                       ),
-                      label: "Delete",
                     ),
-                    const BottomNavigationBarItem(
-                        icon: Icon(Icons.share), label: "Share"),
+                    BottomNavigationBarItem(
+                      label: "Убрать",
+                      icon: InkWell(
+                        child:
+                            const Icon(Icons.settings_backup_restore_rounded),
+                        onTap: () {
+                          setState(() {
+                            selectedNote.clear();
+                          });
+                        },
+                      ),
+                    ),
                   ],
                 )
               : const SizedBox()),

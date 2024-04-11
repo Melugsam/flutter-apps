@@ -26,12 +26,15 @@ class NoteTile extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 4,),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              title,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
           ),
           const SizedBox(
-            height: 8,
+            height: 12,
           ),
           Align(
             alignment: Alignment.centerLeft,
