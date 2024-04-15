@@ -15,6 +15,8 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   List<List<int>> tiles = [];
   bool gameStarted = false;
+  bool gameLoosed = false;
+  final int gridSize = 4;
 
   @override
   void initState() {
@@ -67,9 +69,34 @@ class _GameScreenState extends State<GameScreen> {
                   children: [
                     if (tiles.isNotEmpty)
                       GestureDetector(
-                        onVerticalDragEnd: (details) {},
-                        onHorizontalDragEnd: (details) {},
+                        onVerticalDragEnd: (details) {
+                          if (details.primaryVelocity!.isNegative) {
+                            setState(() {
+                              moveUp();
+                              generateNewTiles(tileSize);
+                            });
+                          } else {
+                            setState(() {
+                              moveDown();
+                              generateNewTiles(tileSize);
+                            });
+                          }
+                        },
+                        onHorizontalDragEnd: (details) {
+                          if (details.primaryVelocity!.isNegative) {
+                            setState(() {
+                              moveRight();
+                              generateNewTiles(tileSize);
+                            });
+                          } else {
+                            setState(() {
+                              moveLeft();
+                              generateNewTiles(tileSize);
+                            });
+                          }
+                        },
                         child: GridView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
@@ -89,30 +116,55 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     Visibility(
                       visible: !gameStarted,
-                      child: Stack(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8.0),
-                              color: Colors.black.withOpacity(0.5),
-                            ),
+                      child: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            gameStarted = !gameStarted;
+                            startNewGame(tileSize);
+                          });
+                        },
+                        icon: const Center(
+                          child: Icon(
+                            Icons.play_arrow,
+                            color: Colors.white,
+                            size: 64,
                           ),
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                gameStarted = !gameStarted;
-                                startNewGame(tileSize);
-                              });
-                            },
-                            icon: const Center(
-                              child: Icon(
-                                Icons.play_arrow,
-                                color: Colors.white,
-                                size: 64,
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: gameLoosed,
+                      child: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            gameLoosed = !gameLoosed;
+                            startNewGame(tileSize);
+                          });
+                        },
+                        icon: Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                "Ты проиграл",
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: tileSize / 3),
                               ),
-                            ),
-                          )
-                        ],
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    gameLoosed = !gameLoosed;
+                                    startNewGame(tileSize);
+                                  });
+                                },
+                                child: const Text(
+                                  "Ещё раз",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
                       ),
                     )
                   ],
@@ -126,7 +178,6 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void startNewGame(double tileSize) {
-    const int gridSize = 4;
     tiles.clear();
 
     for (int i = 0; i < gridSize; i++) {
@@ -145,5 +196,91 @@ class _GameScreenState extends State<GameScreen> {
 
       tiles[row][column] = value;
     }
+    // for (int i = 0; i < gridSize; i++) {
+    //   tiles.add(List<int>.filled(gridSize, 2));
+    // }
+  }
+
+  void generateNewTiles(double tileSize) {
+    Random random = Random();
+    for (int i = 0; i < 2; i++) {
+      int row, column;
+      do {
+        row = random.nextInt(gridSize);
+        column = random.nextInt(gridSize);
+      } while (tiles[row][column] != 0 && check());
+      int value = (random.nextDouble() < 0.9) ? 2 : 4;
+      tiles[row][column] = value;
+    }
+  }
+
+  bool check() {
+    int num=0;
+    for (int row=0; row<tiles.length; row++){
+      for (int column=0; column<tiles[row].length; column++){
+        if (tiles[row][column]==0) num++;
+        if (num>=2) return true;
+      }
+    }
+    return false;
+  }
+
+  void moveUp() {
+    for (int column = 0; column < tiles.length; column++) {
+      List<int> tempList = [];
+      for (int row = 0; row < tiles[column].length; row++) {
+        tempList.add(tiles[row][column]);
+      }
+      List<int> newList = updateRow(tempList.reversed.toList());
+      for (int row = 0; row < tiles[column].length; row++) {
+        tiles[row][column] = newList[tiles[column].length - row - 1];
+      }
+    }
+  }
+
+  void moveDown() {
+    for (int column = 0; column < tiles.length; column++) {
+      List<int> tempList = [];
+      for (int row = 0; row < tiles[column].length; row++) {
+        tempList.add(tiles[row][column]);
+      }
+      List<int> newList = updateRow(tempList);
+      for (int row = 0; row < tiles[column].length; row++) {
+        tiles[row][column] = newList[row];
+      }
+    }
+  }
+
+  void moveRight() {
+    for (int row = 0; row < tiles.length; row++) {
+      tiles[row] = updateRow(tiles[row].reversed.toList()).reversed.toList();
+    }
+  }
+
+  void moveLeft() {
+    for (int row = 0; row < tiles.length; row++) {
+      tiles[row] = updateRow(tiles[row]);
+    }
+  }
+
+  List<int> updateRow(List<int> row) {
+    for (int column = 1; column < row.length; column++) {
+      int tempIndex = row.length - 1;
+      while (tempIndex != 0) {
+        int curr = row[tempIndex];
+        int prev = row[tempIndex - 1];
+        if (curr > 0 && curr == prev) {
+          row[tempIndex - 1] = row[tempIndex - 1] * 2;
+          row[tempIndex] = 0;
+        }
+        if (curr > 0 && prev == 0) {
+          row[tempIndex - 1] = curr;
+          row[tempIndex] = 0;
+          tempIndex = row.length - 1;
+        }
+        tempIndex--;
+      }
+    }
+    return row;
   }
 }

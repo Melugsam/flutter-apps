@@ -9,7 +9,8 @@ class Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.all(4),
       height: size,
       width: size,
