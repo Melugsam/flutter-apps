@@ -1,4 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:notekeeper_new/data/note_colors.dart';
@@ -128,10 +131,6 @@ class _NoteFormState extends State<NoteForm> {
                             ),
                           ),
                           IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.notifications_none),
-                          ),
-                          IconButton(
                             onPressed: () {
                               setState(() {
                                 isPinned = 1 - isPinned;
@@ -142,8 +141,10 @@ class _NoteFormState extends State<NoteForm> {
                                 : Icons.push_pin_outlined),
                           ),
                           IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.more_vert),
+                            onPressed: () {
+                              showColorPicker();
+                            },
+                            icon: const Icon(Icons.color_lens_outlined),
                           ),
                         ],
                       ),
@@ -186,4 +187,27 @@ class _NoteFormState extends State<NoteForm> {
 
   static String currentTime() => DateFormat('dd.MM.yyyy HH:mm')
       .format(DateTime.now().add(const Duration(hours: 3)));
+
+  void showColorPicker() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Выберите цвет"),
+            content: SingleChildScrollView(
+              child: ColorPicker(
+                onColorChanged: (value) {
+                  setState(() {
+                    containerColor=value;
+                  });
+                },
+                pickerColor: const Color.fromRGBO(255, 255, 255, 1.0),
+                paletteType: PaletteType.hueWheel,
+              ),
+            ),
+          );
+        });
+  }
 }
+
+

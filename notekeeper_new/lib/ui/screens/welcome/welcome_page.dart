@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -15,17 +17,22 @@ class WelcomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  "Welcome\nto NoteKeeper",
+                  "Добро пожаловать",
                   style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  "NoteKeeper",
+                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(
                   height: 32,
                 ),
                 Text(
-                  "The ultimate app\nfor organizing\nyour thoughts,\nideas and tasks.",
+                  "Лучшее приложение\nдля систематизации ваших мыслей, идей и задач.",
+                  textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
                 ),
               ],
@@ -51,7 +58,7 @@ class WelcomePage extends StatelessWidget {
                       )
                     ),
                     child: Text(
-                      "Lets start",
+                      "Приступим!",
                       style: TextStyle(
                         fontSize: 16,
                         color: const Color.fromRGBO(188, 193, 202, 1.0),
