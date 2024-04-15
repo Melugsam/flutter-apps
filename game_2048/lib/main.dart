@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:game_2048/app.dart';
 void main() {
-  runApp(const Game2048());
+  runApp(const GameApp());
 }
